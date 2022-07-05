@@ -100,6 +100,10 @@ def build_downstream_solver(cfg, dataset):
         logger.warning(dataset)
         logger.warning("#train: %d, #valid: %d, #test: %d" % (len(train_set), len(valid_set), len(test_set)))
 
+    if cfg.task['class'] == 'MultipleBinaryClassification':
+        cfg.task.task = [_ for _ in range(len(dataset.tasks))]
+    else:
+        cfg.task.task = dataset.tasks
     task = core.Configurable.load_config_dict(cfg.task)
     if not "lr_ratio" in cfg:
         cfg.optimizer.params = task.parameters()
@@ -112,12 +116,12 @@ def build_downstream_solver(cfg, dataset):
     optimizer = core.Configurable.load_config_dict(cfg.optimizer)
     solver = core.Engine(task, train_set, valid_set, test_set, optimizer, **cfg.engine)
 
-    if "checkpoint" in cfg:
+    if cfg.get("checkpoint") is not None:
         solver.load(cfg.checkpoint)
 
-    if "model_checkpoint" in cfg:
+    if cfg.get("model_checkpoint") is not None:
         cfg.model_checkpoint = os.path.expanduser(cfg.model_checkpoint)
         model_dict = torch.load(cfg.model_checkpoint, map_location=torch.device('cpu'))
         task.model.load_state_dict(model_dict)
-
+    
     return solver
