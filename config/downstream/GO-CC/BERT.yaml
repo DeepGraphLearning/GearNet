@@ -1,0 +1,39 @@
+output_dir: ~/scratch/protein_output
+
+dataset:
+  class: GeneOntology
+  path: ~/scratch/protein-datasets/
+  branch: CC
+  test_cutoff: 0.95
+  transform:
+    class: ProteinView
+    view: residue
+
+task:
+  class: MultipleBinaryClassification
+  model:
+    class: ProteinBERT
+    input_dim: 21
+    hidden_dim: 512
+    num_layers: 4
+    num_heads: 8
+    intermediate_dim: 2048
+    hidden_dropout: 0.1
+    attention_dropout: 0.1
+  criterion: bce
+  metric: ['auprc@micro', 'f1_max']
+  num_mlp_layer: 2
+
+optimizer:
+  class: Adam
+  lr: 5.0e-5
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 8
+  log_interval: 1000
+
+metric: f1_max
+
+train:
+  num_epoch: 200

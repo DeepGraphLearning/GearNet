@@ -1,0 +1,54 @@
+output_dir: ~/scratch/protein_output
+
+dataset:
+  class: GeneOntology
+  path: ~/scratch/protein-datasets/
+  branch: BP
+  test_cutoff: 0.95
+  transform:
+    class: ProteinView
+    view: residue
+
+task:
+  class: MultipleBinaryClassification
+  model:
+    class: GearNet
+    input_dim: 21
+    hidden_dims: [512, 512, 512, 512, 512, 512]
+    batch_norm: True
+    concat_hidden: True
+    short_cut: True
+    readout: 'sum'
+    num_relation: 7
+  graph_construction_model:
+    class: GraphConstruction
+    node_layers:
+      - class: AlphaCarbonNode
+    edge_layers:
+      - class: SequentialEdge
+        max_distance: 2
+      - class: SpatialEdge
+        radius: 10.0
+        min_distance: 5
+      - class: KNNEdge
+        k: 10
+        min_distance: 5
+    edge_feature: gearnet
+  criterion: bce
+  num_mlp_layer: 3
+  metric: ['auprc@micro', 'f1_max']
+
+optimizer:
+  class: AdamW
+  lr: 1.0e-4
+  weight_decay: 0
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 2
+  log_interval: 1000
+
+metric: f1_max
+
+train:
+  num_epoch: 200
