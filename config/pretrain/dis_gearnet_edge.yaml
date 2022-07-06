@@ -1,4 +1,4 @@
-output_dir: ~/scratch/protein_outputs
+output_dir: ~/scratch/protein_output
 
 dataset:
   class: AlphaFoldDB

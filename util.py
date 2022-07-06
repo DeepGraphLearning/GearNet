@@ -120,6 +120,8 @@ def build_downstream_solver(cfg, dataset):
         solver.load(cfg.checkpoint)
 
     if cfg.get("model_checkpoint") is not None:
+        if comm.get_rank() == 0:
+            logger.warning("Load checkpoint from %s" % cfg.model_checkpoint)
         cfg.model_checkpoint = os.path.expanduser(cfg.model_checkpoint)
         model_dict = torch.load(cfg.model_checkpoint, map_location=torch.device('cpu'))
         task.model.load_state_dict(model_dict)
