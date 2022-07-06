@@ -9,37 +9,156 @@ This is the official codebase of the paper
 
 ## Overview
 
+*GeomEtry-Aware Relational Graph Neural Network (**GearNet**)* is a simple yet effective structure-based protein encoder. 
+It encodes spatial information by adding different types of sequential or structural edges and then performs relational message passing on protein residue graphs, which can be further enhanced by an edge message passing mechanism.
+Though conceptually simple, GearNet augmented with edge message passing can achieve very strong performance on several benchmarks in a supervised setting.
+
+![GearNet](./asset/GearNet.png)
+
+Five different geometric self-supervised learning methods based on protein structures are further proposed to pretrain the encoder, including **Multivew Contrast**, **Residue Type Prediction**, **Distance Prediction**, **Angle Prediction**, **Dihedral Prediction**.
+Through extensively benchmarking these pretraining techniques on diverse
+downstream tasks, we set up a solid starting point for pretraining protein structure representations.
+
+![SSL](./asset/SSL.png)
+
 This codebase is based on PyTorch and [TorchDrug] ([TorchProtein](https://torchprotein.ai)). It supports training and inference
-with multiple GPUs or multiple machines.
+with multiple GPUs.
 
 [TorchDrug]: https://github.com/DeepGraphLearning/torchdrug
 
 ## Installation
 
-You may install the dependencies via either conda or pip. Generally, NBFNet works
+You may install the dependencies via either conda or pip. Generally, GearNet works
 with Python 3.7/3.8 and PyTorch version >= 1.8.0.
 
 ### From Conda
 
 ```bash
-conda install pytorch=1.8.0 cudatoolkit=11.1 -c pytorch -c conda-forge
-conda install pyg -c pyg
-conda install rdkit easydict pyyaml -c conda-forge
+conda install torchdrug pytorch=1.8.0 cudatoolkit=11.1 -c milagraph -c pytorch-lts -c pyg -c conda-forge
+conda install easydict pyyaml -c conda-forge
+```
+
+### From Pip
+
+```bash
+pip install torch==1.8.0+cu111 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+pip install torchdrug
+pip install easydict pyyaml
 ```
 
 
 ## Reproduction
 
-To reproduce the results of GearBind, use the following command. Alternatively, you
-may use `--gpus null` to run GearBind on a CPU. All the datasets will be automatically
-downloaded in the code.
+### Training From Scratch
+
+To reproduce the results of GearNet, use the following command. Alternatively, you
+may use `--gpus null` to run GearNet on a CPU. All the datasets will be automatically downloaded in the code.
+It takes longer time to run the code for the first time due to the preprocessing time of the dataset.
+
+```bash
+# Run GearNet on the Enzyme Comission dataset with 1 gpu
+python script/downstream.py -c config/downstream/EC/gearnet.yaml --gpus [0]
+```
 
 We provide the hyperparameters for each experiment in configuration files.
 All the configuration files can be found in `config/*.yaml`.
 
-To run GearBind with multiple GPUs, use the following commands
+To run GearNet with multiple GPUs, use the following commands.
 
 ```bash
-python -m torch.distributed.launch --nproc_per_node=4 script/run.py -c config/downstream/gearnet.yaml --gpus [0,1,2,3]
+# Run GearNet on the Enzyme Comission dataset with 4 gpus
+python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/EC/gearnet.yaml --gpus [0,1,2,3]
 ```
 
+
+### Pretraining and Finetuning
+By default, we will use the AlphaFold Datase for pretraining.
+To pretrain GearNet-Edge with Multiview Contrast, use the following command. 
+Similar, all the datasets will be automatically downloaded in the code and preprocessed for the first time you run the code.
+
+```bash
+# Pretrain GearNet-Edge with Multiview Contrast
+python script/pretrain.py -c config/pretrain/mc_gearnet_edge.yaml --gpus [0]
+```
+
+After pretraining, you can load the model weight from the saved checkpoint via the `--ckpt` argument and then finetune the model on downstream tasks.
+
+```bash
+# Finetune GearNet-Edge on the Enzyme Commission dataset
+python script/downstream.py -c config/downstream/EC/gearnet_edge.yaml --gpus [0] --ckpt <path_to_your_model>
+```
+
+## Results
+Here are the results of GearNet w/ and w/o pretraining on standard benchmark datasets. All the results are obtained with 4 A100 GPUs (40GB). Note results may be slightly different if the model is trained with 1 GPU and/or a smaller batch size.
+More detailed results are listed in the paper.
+
+<table>
+    <tr>
+        <th>Method</th>
+        <th>EC</th>
+        <th>GO-BP</th>
+        <th>GO-MF</th>
+        <th>GO-CC</th>
+    </tr>
+    <tr>
+        <th>GearNet</th>
+        <td>0.730</td>
+        <td>0.356</td>
+        <td>0.503</td>
+        <td>0.414</td>
+    </tr>
+    <tr>
+        <th>GearNet-Edge</th>
+        <td>0.810</td>
+        <td>0.403</td>
+        <td>0.580</td>
+        <td>0.450</td>
+    </tr>
+    <tr>
+        <th>Multiview Contrast</th>
+        <td>0.874</td>
+        <td>0.490</td>
+        <td>0.654</td>
+        <td>0.488</td>
+    </tr>
+    <tr>
+        <th>Residue Type Prediction</th>
+        <td>0.843</td>
+        <td>0.430</td>
+        <td>0.604</td>
+        <td>0.465</td>
+    </tr>
+    <tr>
+        <th>Distance Prediction</th>
+        <td>0.839</td>
+        <td>0.448</td>
+        <td>0.616</td>
+        <td>0.464</td>
+    </tr>
+    <tr>
+        <th>Angle Prediction</th>
+        <td>0.853</td>
+        <td>0.458</td>
+        <td>0.625</td>
+        <td>0.473</td>
+    </tr>
+    <tr>
+        <th>Dihedral Prediction</th>
+        <td>0.859</td>
+        <td>0.458</td>
+        <td>0.626</td>
+        <td>0.465</td>
+    </tr>
+</table>
+
+## Citation
+If you find this codebase useful in your research, please cite the following paper.
+
+```bibtex
+@article{zhang2022protein,
+  title={Protein representation learning by geometric structure pretraining},
+  author={Zhang, Zuobai and Xu, Minghao and Jamasb, Arian and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
+  journal={arXiv preprint arXiv:2203.06125},
+  year={2022}
+}
+```
