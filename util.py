@@ -125,3 +125,16 @@ def build_downstream_solver(cfg, dataset):
         task.model.load_state_dict(model_dict)
     
     return solver
+
+
+def build_pretrain_solver(cfg, dataset):
+    if comm.get_rank() == 0:
+        logger.warning(dataset)
+        logger.warning("#dataset: %d" % (len(dataset)))
+
+    task = core.Configurable.load_config_dict(cfg.task)
+    cfg.optimizer.params = task.parameters()
+    optimizer = core.Configurable.load_config_dict(cfg.optimizer)
+    solver = core.Engine(task, dataset, None, None, optimizer, **cfg.engine)
+    
+    return solver
