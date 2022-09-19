@@ -21,8 +21,10 @@ downstream tasks, we set up a solid starting point for pretraining protein struc
 
 ![SSL](./asset/SSL.png)
 
-This codebase is based on PyTorch and [TorchDrug] ([TorchProtein](https://torchprotein.ai)). It supports training and inference
-with multiple GPUs.
+This codebase is based on PyTorch and [TorchDrug] ([TorchProtein](https://torchprotein.ai)). 
+It supports training and inference with multiple GPUs.
+The documentation and implementation of our methods can be found in the [docs](https://torchdrug.ai/docs/) of TorchDrug.
+To adapt our model in your setting, you can follow the step-by-step [tuorials](https://torchprotein.ai/tutorials) in TorchProtein.
 
 [TorchDrug]: https://github.com/DeepGraphLearning/torchdrug
 
