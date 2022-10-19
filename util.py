@@ -109,10 +109,9 @@ def build_downstream_solver(cfg, dataset):
         cfg.optimizer.params = task.parameters()
     else:
         cfg.optimizer.params = [
-            {'params': task.model.model.parameters(), 'lr': cfg.optimizer.lr * cfg.lr_ratio},
-            {'params': task.model.mlp.parameters(), 'lr': cfg.optimizer.lr}
+            {'params': task.model.parameters(), 'lr': cfg.optimizer.lr * cfg.lr_ratio},
+            {'params': task.mlp.parameters(), 'lr': cfg.optimizer.lr}
         ]
-    cfg.optimizer.params = task.parameters()
     optimizer = core.Configurable.load_config_dict(cfg.optimizer)
     solver = core.Engine(task, train_set, valid_set, test_set, optimizer, **cfg.engine)
 
