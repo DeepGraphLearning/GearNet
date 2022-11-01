@@ -91,7 +91,7 @@ python script/downstream.py -c config/downstream/EC/gearnet_edge.yaml --gpus [0]
 ```
 
 ## Results
-Here are the results of GearNet w/ and w/o pretraining on standard benchmark datasets. All the results are obtained with 4 A100 GPUs (40GB). Note results may be slightly different if the model is trained with 1 GPU and/or a smaller batch size.
+Here are the results of GearNet w/ and w/o pretraining on standard benchmark datasets. **All the results are obtained with 4 A100 GPUs (40GB). Note results may be slightly different if the model is trained with 1 GPU and/or a smaller batch size.**
 More detailed results are listed in the paper.
 
 <table>

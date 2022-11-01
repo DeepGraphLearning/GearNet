@@ -5,6 +5,8 @@ dataset:
   path: ~/scratch/protein-datasets/
   branch: MF
   test_cutoff: 0.95
+  atom_feature: null
+  bond_feature: null
   transform:
     class: Compose
     transforms:

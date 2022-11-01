@@ -5,6 +5,8 @@ dataset:
   path: ~/scratch/protein-datasets/
   branch: CC
   test_cutoff: 0.95
+  atom_feature: null
+  bond_feature: null
   transform:
     class: ProteinView
     view: residue

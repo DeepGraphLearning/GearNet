@@ -4,6 +4,8 @@ dataset:
   class: EnzymeCommission
   path: ~/scratch/protein-datasets/
   test_cutoff: 0.95
+  atom_feature: null
+  bond_feature: null
   transform:
     class: Compose
     transforms:
