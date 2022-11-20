@@ -10,6 +10,7 @@ import easydict
 
 import torch
 from torch import distributed as dist
+from torch.optim import lr_scheduler
 
 from torchdrug import core, utils, datasets, models, tasks
 from torchdrug.utils import comm
@@ -105,7 +106,7 @@ def build_downstream_solver(cfg, dataset):
     else:
         cfg.task.task = dataset.tasks
     task = core.Configurable.load_config_dict(cfg.task)
-    if not "lr_ratio" in cfg:
+    if "lr_ratio" not in cfg:
         cfg.optimizer.params = task.parameters()
     else:
         cfg.optimizer.params = [
@@ -113,6 +114,15 @@ def build_downstream_solver(cfg, dataset):
             {'params': task.mlp.parameters(), 'lr': cfg.optimizer.lr}
         ]
     optimizer = core.Configurable.load_config_dict(cfg.optimizer)
+    if "scheduler" not in cfg:
+        scheduler = None
+    elif cfg.scheduler["class"] == "ReduceLROnPlateau":
+        cfg.scheduler.pop("class")
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, **cfg.scheduler)
+    else:
+        cfg.scheduler.optimizer = optimizer
+        scheduler = core.Configurable.load_config_dict(cfg.scheduler)
+        cfg.engine.scheduler = scheduler
     solver = core.Engine(task, train_set, valid_set, test_set, optimizer, **cfg.engine)
 
     if cfg.get("checkpoint") is not None:
@@ -125,7 +135,7 @@ def build_downstream_solver(cfg, dataset):
         model_dict = torch.load(cfg.model_checkpoint, map_location=torch.device('cpu'))
         task.model.load_state_dict(model_dict)
     
-    return solver
+    return solver, scheduler
 
 
 def build_pretrain_solver(cfg, dataset):

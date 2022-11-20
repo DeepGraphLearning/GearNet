@@ -47,6 +47,11 @@ optimizer:
   lr: 1.0e-4
   weight_decay: 0
 
+scheduler:
+  class: ReduceLROnPlateau
+  factor: 0.6
+  patience: 5
+
 engine:
   gpus: {{ gpus }}
   batch_size: 2

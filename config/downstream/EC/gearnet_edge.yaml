@@ -46,6 +46,11 @@ optimizer:
   lr: 1.0e-4
   weight_decay: 0
 
+scheduler:
+  class: ReduceLROnPlateau
+  factor: 0.6
+  patience: 5
+
 engine:
   gpus: {{ gpus }}
   batch_size: 2
@@ -56,4 +61,4 @@ model_checkpoint: {{ ckpt }}
 metric: f1_max
 
 train:
-  num_epoch: 200
+  num_epoch: 50

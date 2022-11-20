@@ -2,8 +2,12 @@ import os
 import sys
 import math
 import pprint
+import random
+
+import numpy as np
 
 import torch
+from torch.optim import lr_scheduler
 
 from torchdrug import core, models, tasks, datasets, utils
 from torchdrug.utils import comm
@@ -12,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import util
 
 
-def train_and_validate(cfg, solver):
+def train_and_validate(cfg, solver, scheduler):
     if cfg.train.num_epoch == 0:
         return
 
@@ -25,12 +29,14 @@ def train_and_validate(cfg, solver):
         kwargs["num_epoch"] = min(step, cfg.train.num_epoch - i)
         solver.train(**kwargs)
         solver.save("model_epoch_%d.pth" % solver.epoch)
-        solver.evaluate("train")
         metric = solver.evaluate("valid")
+        solver.evaluate("test")
         result = metric[cfg.metric]
         if result > best_result:
             best_result = result
             best_epoch = solver.epoch
+        if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
+            scheduler.step(result)
 
     solver.load("model_epoch_%d.pth" % best_epoch)
     return solver
@@ -46,7 +52,17 @@ if __name__ == "__main__":
     cfg = util.load_config(args.config, context=vars)
     working_dir = util.create_working_directory(cfg)
 
-    torch.manual_seed(args.seed + comm.get_rank())
+    seed = args.seed
+    torch.manual_seed(seed + comm.get_rank())
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     logger = util.get_root_logger()
     if comm.get_rank() == 0:
@@ -54,7 +70,7 @@ if __name__ == "__main__":
         logger.warning(pprint.pformat(cfg))
 
     dataset = core.Configurable.load_config_dict(cfg.dataset)
-    solver = util.build_downstream_solver(cfg, dataset)
+    solver, scheduler = util.build_downstream_solver(cfg, dataset)
 
-    train_and_validate(cfg, solver)
+    train_and_validate(cfg, solver, scheduler)
     test(cfg, solver)
