@@ -7,6 +7,10 @@ This is the official codebase of the paper
 
 [Zuobai Zhang](https://oxer11.github.io/), [Minghao Xu](https://chrisallenming.github.io/), [Arian Jamasb](https://jamasb.io/), [Vijil Chenthamarakshan](https://researcher.watson.ibm.com/researcher/view.php?person=us-ecvijil), [Aurelie Lozano](https://researcher.watson.ibm.com/researcher/view.php?person=us-aclozano), [Payel Das](https://researcher.watson.ibm.com/researcher/view.php?person=us-daspa), [Jian Tang](https://jian-tang.com/)
 
+## News
+
+- [2022/11/20] We add the scheduler in the `downstream.py` and provide the config file for training GearNet-Edge with single GPU on EC. Now you can reproduce the results in the paper.
+
 ## Overview
 
 *GeomEtry-Aware Relational Graph Neural Network (**GearNet**)* is a simple yet effective structure-based protein encoder. 
