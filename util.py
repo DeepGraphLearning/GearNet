@@ -106,14 +106,10 @@ def build_downstream_solver(cfg, dataset):
     else:
         cfg.task.task = dataset.tasks
     task = core.Configurable.load_config_dict(cfg.task)
-    if "lr_ratio" not in cfg:
-        cfg.optimizer.params = task.parameters()
-    else:
-        cfg.optimizer.params = [
-            {'params': task.model.parameters(), 'lr': cfg.optimizer.lr * cfg.lr_ratio},
-            {'params': task.mlp.parameters(), 'lr': cfg.optimizer.lr}
-        ]
+
+    cfg.optimizer.params = task.parameters()        
     optimizer = core.Configurable.load_config_dict(cfg.optimizer)
+
     if "scheduler" not in cfg:
         scheduler = None
     elif cfg.scheduler["class"] == "ReduceLROnPlateau":
@@ -123,7 +119,16 @@ def build_downstream_solver(cfg, dataset):
         cfg.scheduler.optimizer = optimizer
         scheduler = core.Configurable.load_config_dict(cfg.scheduler)
         cfg.engine.scheduler = scheduler
+
     solver = core.Engine(task, train_set, valid_set, test_set, optimizer, **cfg.engine)
+
+    if "lr_ratio" in cfg:
+        cfg.optimizer.params = [
+            {'params': solver.model.model.parameters(), 'lr': cfg.optimizer.lr * cfg.lr_ratio},
+            {'params': solver.model.mlp.parameters(), 'lr': cfg.optimizer.lr}
+        ]
+        optimizer = core.Configurable.load_config_dict(cfg.optimizer)
+        solver.optimizer = optimizer
 
     if cfg.get("checkpoint") is not None:
         solver.load(cfg.checkpoint)
