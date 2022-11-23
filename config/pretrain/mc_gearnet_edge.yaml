@@ -56,11 +56,11 @@ task:
 
 optimizer:
   class: Adam
-  lr: 2.0e-4
+  lr: 1.0e-3
 
 engine:
   gpus: {{ gpus }}
-  batch_size: 48
+  batch_size: 96
   log_interval: 100
 
 save_interval: 5
