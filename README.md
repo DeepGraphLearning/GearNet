@@ -3,11 +3,15 @@
 
 This is the official codebase of the paper
 
-[Protein Representation Learning by Geometric Structure Pretraining](https://arxiv.org/abs/2203.06125)
+**Protein Representation Learning by Geometric Structure Pretraining**, *ICLR'2023*
+
+[[ArXiv](https://arxiv.org/abs/2203.06125)] [[OpenReview](https://openreview.net/forum?id=to3qCB3tOh9)]
 
 [Zuobai Zhang](https://oxer11.github.io/), [Minghao Xu](https://chrisallenming.github.io/), [Arian Jamasb](https://jamasb.io/), [Vijil Chenthamarakshan](https://researcher.watson.ibm.com/researcher/view.php?person=us-ecvijil), [Aurelie Lozano](https://researcher.watson.ibm.com/researcher/view.php?person=us-aclozano), [Payel Das](https://researcher.watson.ibm.com/researcher/view.php?person=us-daspa), [Jian Tang](https://jian-tang.com/)
 
 ## News
+
+- [2023/02/01] Our paper has been accepted by ICLR'2023! We have released the pretrained model weights [here](https://zenodo.org/record/7593637).
 
 - [2022/11/20] We add the scheduler in the `downstream.py` and provide the config file for training GearNet-Edge with single GPU on EC. Now you can reproduce the results in the paper.
 
@@ -28,7 +32,7 @@ downstream tasks, we set up a solid starting point for pretraining protein struc
 This codebase is based on PyTorch and [TorchDrug] ([TorchProtein](https://torchprotein.ai)). 
 It supports training and inference with multiple GPUs.
 The documentation and implementation of our methods can be found in the [docs](https://torchdrug.ai/docs/) of TorchDrug.
-To adapt our model in your setting, you can follow the step-by-step [tuorials](https://torchprotein.ai/tutorials) in TorchProtein.
+To adapt our model in your setting, you can follow the step-by-step [tutorials](https://torchprotein.ai/tutorials) in TorchProtein.
 
 [TorchDrug]: https://github.com/DeepGraphLearning/torchdrug
 
@@ -93,6 +97,8 @@ After pretraining, you can load the model weight from the saved checkpoint via t
 # Finetune GearNet-Edge on the Enzyme Commission dataset
 python script/downstream.py -c config/downstream/EC/gearnet_edge.yaml --gpus [0] --ckpt <path_to_your_model>
 ```
+
+You can find the pretrained model weights [here](https://zenodo.org/record/7593637), including those pretrained with [Multiview Contrast](https://zenodo.org/record/7593637/files/mc_gearnet_edge.pth), [Residue Type Prediction](https://zenodo.org/record/7593637/files/attr_gearnet_edge.pth), [Distance Prediction](https://zenodo.org/record/7593637/files/distance_gearnet_edge.pth), [Angle Prediction](https://zenodo.org/record/7593637/files/angle_gearnet_edge.pth) and [Dihedral Prediction](https://zenodo.org/record/7593637/files/dihedral_gearnet_edge.pth).
 
 ## Results
 Here are the results of GearNet w/ and w/o pretraining on standard benchmark datasets. **All the results are obtained with 4 A100 GPUs (40GB). Note results may be slightly different if the model is trained with 1 GPU and/or a smaller batch size. For EC and GO, the provided config files are for 4 GPUs with batch size 2 on each one. If you run the model on 1 GPU, you should set the batch size as 8.**
