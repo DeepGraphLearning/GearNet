@@ -10,7 +10,7 @@ from torchdrug.core import Registry as R
 
 
 @R.register("datasets.Fold3D")
-class Fold3D(data.Protein3DDataset):
+class Fold3D(data.ProteinDataset):
     """
     Fold labels for a set of proteins determined by the global structural topology.
 
@@ -92,7 +92,7 @@ class Fold3D(data.Protein3DDataset):
         if hasattr(protein, "residue_feature"):
             with protein.residue():
                 protein.residue_feature = protein.residue_feature.to_dense()
-        item = {"graph": protein, "fold_labels": self.targets["fold_labels"][index]}
+        item = {"graph": protein, "fold_label": self.targets["fold_label"][index]}
         if self.transform:
             item = self.transform(item)
         return item

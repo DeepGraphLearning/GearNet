@@ -85,7 +85,7 @@ class GearNetIEConv(nn.Module, core.Configurable):
         t = graph.node_position[node_out] - graph.node_position[node_in]
         t = torch.einsum('ijk, ij->ik', local_frame[node_in], t)
         r = torch.sum(local_frame[node_in] * local_frame[node_out], dim=1)
-        delta = torch.abs(graph.residue_id[node_in] - graph.residue_id[node_out]).float() / 6
+        delta = torch.abs(graph.atom2residue[node_in] - graph.atom2residue[node_out]).float() / 6
         delta = delta.unsqueeze(-1)
 
         return torch.cat([
