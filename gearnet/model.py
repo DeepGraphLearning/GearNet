@@ -18,7 +18,7 @@ class GearNetIEConv(nn.Module, core.Configurable):
 
     def __init__(self, input_dim, embedding_dim, hidden_dims, num_relation, edge_input_dim=None,
                  batch_norm=False, activation="relu", concat_hidden=False, short_cut=True, 
-                 readout="sum", dropout=0, num_angle_bin=8, layer_norm=False):
+                 readout="sum", dropout=0, num_angle_bin=8, layer_norm=False, use_ieconv=False):
         super(GearNetIEConv, self).__init__()
 
         if not isinstance(hidden_dims, Sequence):
@@ -34,7 +34,8 @@ class GearNetIEConv(nn.Module, core.Configurable):
         self.num_angle_bin = num_angle_bin
         self.short_cut = short_cut
         self.concat_hidden = concat_hidden
-        self.layer_norm = layer_norm        
+        self.layer_norm = layer_norm
+        self.use_ieconv = use_ieconv  
 
         if embedding_dim > 0:
             self.linear = nn.Linear(input_dim, embedding_dim)
@@ -43,10 +44,12 @@ class GearNetIEConv(nn.Module, core.Configurable):
         self.layers = nn.ModuleList()
         self.ieconvs = nn.ModuleList()
         for i in range(len(self.dims) - 1):
-            self.layers.append(layers.GeometricRelationalGraphConv(self.dims[i], self.dims[i + 1], num_relation,
+            # note that these layers are from gearnet.layer instead of torchdrug.layers
+            self.layers.append(layer.GeometricRelationalGraphConv(self.dims[i], self.dims[i + 1], num_relation,
                                                                    None, batch_norm, activation))
-            self.ieconvs.append(layer.IEConvLayer(self.dims[i], self.dims[i] // 4, 
-                        self.dims[i+1], edge_input_dim=14, kernel_hidden_dim=32))
+            if use_ieconv:
+                self.ieconvs.append(layer.IEConvLayer(self.dims[i], self.dims[i] // 4, 
+                                    self.dims[i+1], edge_input_dim=14, kernel_hidden_dim=32))
         if num_angle_bin:
             self.spatial_line_graph = layers.SpatialLineGraph(num_angle_bin)
             self.edge_layers = nn.ModuleList()
@@ -101,31 +104,27 @@ class GearNetIEConv(nn.Module, core.Configurable):
             layer_input = self.embedding_batch_norm(layer_input)
         if self.num_angle_bin:
             line_graph = self.spatial_line_graph(graph)
-            edge_input = line_graph.node_feature.float()
+            edge_hidden = line_graph.node_feature.float()
+        else:
+            edge_hidden = None
         ieconv_edge_feature = self.get_ieconv_edge_feature(graph)
 
+        edge_hidden = None
         for i in range(len(self.layers)):
-            hidden = self.layers[i](graph, layer_input)
             # edge message passing
             if self.num_angle_bin:
-                edge_hidden = self.edge_layers[i](line_graph, edge_input)
-                edge_weight = graph.edge_weight.unsqueeze(-1)
-                node_out = graph.edge_list[:, 1] * self.num_relation + graph.edge_list[:, 2]
-                update = scatter_add(edge_hidden * edge_weight, node_out, dim=0,
-                                     dim_size=graph.num_node * self.num_relation)
-                update = update.view(graph.num_node, self.num_relation * edge_hidden.shape[1])
-                update = self.layers[i].linear(update)
-                update = self.layers[i].activation(update)
-                hidden = hidden + update
-                edge_input = edge_hidden
+                edge_hidden = self.edge_layers[i](line_graph, edge_hidden)
+            hidden = self.layers[i](graph, layer_input, edge_hidden)
             # ieconv layer
-            hidden = hidden + self.ieconvs[i](graph, layer_input, ieconv_edge_feature)
+            if self.use_ieconv:
+                hidden = hidden + self.ieconvs[i](graph, layer_input, ieconv_edge_feature)
             hidden = self.dropout(hidden)
             if self.short_cut and hidden.shape == layer_input.shape:
                 hidden = hidden + layer_input
             if self.layer_norm:
                 hidden = self.layer_norms[i](hidden)
             hiddens.append(hidden)
+            layer_input = hidden
 
         if self.concat_hidden:
             node_feature = torch.cat(hiddens, dim=-1)
