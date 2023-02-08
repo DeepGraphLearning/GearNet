@@ -129,14 +129,14 @@ class NewFold3D(data.ProteinDataset):
             pdb_files = []
             for split in self.splits:
                 split_path = utils.extract(os.path.join(path, "%s.zip" % split))
-                pdb_files += sorted(glob.glob(os.path.join(split_path, split, "*.pdb")))
+                pdb_files += sorted(glob.glob(os.path.join(split_path, split, "*.hdf5")))
             self.load_hdf5s(pdb_files, verbose=verbose, **kwargs)
             self.save_pickle(pkl_file, verbose=verbose)
 
         label_files = [os.path.join(path, '%s.txt' % split) for split in self.splits]
         class_map = os.path.join(path, 'class_map.txt')
         label_list = self.get_label_list(label_files, class_map)
-        fold_labels = [label_list[os.path.basename(pdb_file)[:-4]] for pdb_file in self.pdb_files]
+        fold_labels = [label_list[os.path.basename(pdb_file)[:-5]] for pdb_file in self.pdb_files]
         self.targets = {'fold_label': fold_labels}
 
         splits = [os.path.basename(os.path.dirname(pdb_file)) for pdb_file in self.pdb_files]
@@ -156,26 +156,31 @@ class NewFold3D(data.ProteinDataset):
         lst_residue = -1
         for i in range(num_atom):
             if atom2residue[i] != lst_residue:
-                residue_type.append(data.Protein.residue2id.get(residue_type_name.decode(), 0))
-                residue_feature.append(data.feature.one_hot(residue_type_name.decode(), data.feature.residue_vocab, allow_unknown=True))
+                residue_type.append(data.Protein.residue2id.get(residue_type_name[i].decode(), 0))
+                residue_feature.append(data.feature.onehot(residue_type_name[i].decode(), data.feature.residue_vocab, allow_unknown=True))
                 lst_residue = atom2residue[i]
         residue_type = torch.as_tensor(residue_type)
-        residue_feature = torch.stack(residue_feature, dim=0)
+        residue_feature = torch.as_tensor(residue_feature)
         num_residue = residue_type.shape[0]
-        
+       
+        '''
         edge_list = torch.cat([
             torch.as_tensor(h5File["cov_bond_list"][()]),
             torch.as_tensor(h5File["cov_bond_list_hb"][()])
         ], dim=0)
         bond_type = torch.zeros(edge_list.shape[0], dtype=torch.long)
+        edge_list = torch.cat([edge_list, bond_type.unsqueeze(-1)], dim=-1)
+        '''
+        edge_list = torch.as_tensor([[0, 0, 0]])
+        bond_type = torch.as_tensor([0])
 
-        protein = data.Protein(edge_list, atom_type, bond_type, num_atom=num_atom, num_residue=num_residue,
-                               num_relation=1, node_position=node_position, atom_name=atom_name,
+        protein = data.Protein(edge_list, atom_type, bond_type, num_node=num_atom, num_residue=num_residue,
+                               node_position=node_position, atom_name=atom_name,
                                 atom2residue=atom2residue, residue_feature=residue_feature, 
                                 residue_type=residue_type)
         return protein
 
-    def load_hdf5(self, hdf5_files, transform=None, lazy=False, verbose=0):
+    def load_hdf5s(self, hdf5_files, transform=None, lazy=False, verbose=0):
         num_sample = len(hdf5_files)
         if num_sample > 1000000:
             warnings.warn("Preprocessing proteins of a large dataset consumes a lot of CPU memory and time. "

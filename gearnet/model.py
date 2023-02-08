@@ -18,7 +18,7 @@ class GearNetIEConv(nn.Module, core.Configurable):
 
     def __init__(self, input_dim, embedding_dim, hidden_dims, num_relation, edge_input_dim=None,
                  batch_norm=False, activation="relu", concat_hidden=False, short_cut=True, 
-                 readout="sum", dropout=0, num_angle_bin=8, layer_norm=False, use_ieconv=False):
+                 readout="sum", dropout=0, num_angle_bin=None, layer_norm=False, use_ieconv=False):
         super(GearNetIEConv, self).__init__()
 
         if not isinstance(hidden_dims, Sequence):
@@ -54,7 +54,7 @@ class GearNetIEConv(nn.Module, core.Configurable):
             self.spatial_line_graph = layers.SpatialLineGraph(num_angle_bin)
             self.edge_layers = nn.ModuleList()
             for i in range(len(self.edge_dims) - 1):
-                self.edge_layers.append(layers.GeometricRelationalGraphConv(
+                self.edge_layers.append(layer.GeometricRelationalGraphConv(
                     self.edge_dims[i], self.edge_dims[i + 1], num_angle_bin, None, batch_norm, activation))
 
         if layer_norm:
@@ -99,6 +99,7 @@ class GearNetIEConv(nn.Module, core.Configurable):
     def forward(self, graph, input, all_loss=None, metric=None):
         hiddens = []
         layer_input = input
+        import pdb; pdb.set_trace()
         if self.embedding_dim > 0:
             layer_input = self.linear(layer_input)
             layer_input = self.embedding_batch_norm(layer_input)
@@ -109,7 +110,6 @@ class GearNetIEConv(nn.Module, core.Configurable):
             edge_hidden = None
         ieconv_edge_feature = self.get_ieconv_edge_feature(graph)
 
-        edge_hidden = None
         for i in range(len(self.layers)):
             # edge message passing
             if self.num_angle_bin:
