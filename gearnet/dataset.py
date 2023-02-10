@@ -13,6 +13,7 @@ from torchdrug import data, utils
 from torchdrug.core import Registry as R
 
 
+'''
 @R.register("datasets.Fold3D")
 class Fold3D(data.ProteinDataset):
     """
@@ -100,7 +101,7 @@ class Fold3D(data.ProteinDataset):
         if self.transform:
             item = self.transform(item)
         return item
-
+'''
 
 @R.register("datasets.NewFold3D")
 class NewFold3D(data.ProteinDataset):

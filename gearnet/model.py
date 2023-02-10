@@ -99,7 +99,6 @@ class GearNetIEConv(nn.Module, core.Configurable):
     def forward(self, graph, input, all_loss=None, metric=None):
         hiddens = []
         layer_input = input
-        import pdb; pdb.set_trace()
         if self.embedding_dim > 0:
             layer_input = self.linear(layer_input)
             layer_input = self.embedding_batch_norm(layer_input)
