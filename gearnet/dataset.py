@@ -16,7 +16,7 @@ from torchdrug.core import Registry as R
 @R.register("datasets.Fold3D")
 class Fold3D(data.ProteinDataset):
 
-    url = "https://oxer11.github.io/fold3d.zip"
+    url = "https://zenodo.org/record/7593591/files/fold3d.zip"
     md5 = "7b052a94afa4c66f9bebeb9efd769186"
     processed_file = "fold3d.pkl.gz"
     splits = ["train", "valid", "test_fold", "test_family", "test_superfamily"]

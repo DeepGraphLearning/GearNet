@@ -1,18 +1,28 @@
 output_dir: ~/scratch/protein_output
 
 dataset:
-  class: Fold3D
-  path: ~/scratch/protein-datasets/
-  test_split: test_fold
+  class: AlphaFoldDB
+  path: ~/scratch/protein-datasets/alphafold
+  species_start: 0
+  species_end: 22
+  # species_id: 3
+  # split_id: 1
+  atom_feature: null
+  bond_feature: null
   transform:
-    class: ProteinView
-    view: residue
+    class: Compose
+    transforms:
+      - class: ProteinView
+        view: residue
+      - class: TruncateProtein
+        max_length: 100
+        random: True
 
 task:
-  class: PropertyPrediction
-  num_mlp_layer: 3
-  mlp_batch_norm: True
-  mlp_dropout: 0.5
+  class: AnglePrediction
+  num_sample: 512
+  num_class: 8
+  num_mlp_layer: 2
   model:
     class: GearNetIEConv
     input_dim: 21
@@ -23,11 +33,11 @@ task:
     short_cut: True
     readout: 'sum'
     num_relation: 7
-    # edge_input_dim: 59
-    # num_angle_bin: 8
-    layer_norm: True
+    edge_input_dim: 59
+    num_angle_bin: 8
     dropout: 0.2
     use_ieconv: True
+    layer_norm: True
   graph_construction_model:
     class: GraphConstruction
     node_layers:
@@ -42,29 +52,17 @@ task:
         k: 10
         min_distance: 5
     edge_feature: gearnet
-  criterion: ce
-  metric: ['acc']
-  num_class: 1195
 
 optimizer:
-  class: SGD
+  class: Adam
   lr: 1.0e-3
-  weight_decay: 5.0e-4
-  momentum: 0.98
-
-scheduler:
-  class: StepLR
-  step_size: 50
-  gamma: 0.5
 
 engine:
   gpus: {{ gpus }}
-  batch_size: 2
-  log_interval: 1000
+  batch_size: 32
+  log_interval: 100
 
-model_checkpoint: {{ ckpt }}
-
-metric: accuracy [fold_label]
+save_interval: 5
 
 train:
-  num_epoch: 300
+  num_epoch: 100

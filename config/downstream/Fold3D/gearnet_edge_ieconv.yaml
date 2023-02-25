@@ -14,8 +14,9 @@ task:
   mlp_batch_norm: True
   mlp_dropout: 0.5
   model:
-    class: GearNet
+    class: GearNetIEConv
     input_dim: 21
+    embedding_dim: 512
     hidden_dims: [512, 512, 512, 512, 512, 512]
     batch_norm: True
     concat_hidden: True
@@ -24,8 +25,9 @@ task:
     num_relation: 7
     edge_input_dim: 59
     num_angle_bin: 8
+    layer_norm: True
     dropout: 0.2
-    ieconv: True
+    use_ieconv: True
   graph_construction_model:
     class: GraphConstruction
     node_layers:

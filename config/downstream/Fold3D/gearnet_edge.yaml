@@ -23,11 +23,11 @@ task:
     short_cut: True
     readout: 'sum'
     num_relation: 7
-    # edge_input_dim: 59
-    # num_angle_bin: 8
+    edge_input_dim: 59
+    num_angle_bin: 8
     layer_norm: True
     dropout: 0.2
-    use_ieconv: True
+    # use_ieconv: True
   graph_construction_model:
     class: GraphConstruction
     node_layers:
