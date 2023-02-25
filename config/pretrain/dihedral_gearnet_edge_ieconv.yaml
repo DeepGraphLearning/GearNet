@@ -1,0 +1,68 @@
+output_dir: ~/scratch/protein_output
+
+dataset:
+  class: AlphaFoldDB
+  path: ~/scratch/protein-datasets/alphafold
+  species_start: 0
+  species_end: 22 
+  # species_id: 0
+  # split_id: 1
+  atom_feature: null
+  bond_feature: null
+  transform:
+    class: Compose
+    transforms:
+      - class: ProteinView
+        view: residue
+      - class: TruncateProtein
+        max_length: 100
+        random: True
+
+task:
+  class: DihedralPrediction
+  num_sample: 512
+  num_class: 8
+  num_mlp_layer: 2
+  model:
+    class: GearNet
+    input_dim: 21
+    embedding_dim: 512
+    hidden_dims: [512, 512, 512, 512, 512, 512]
+    batch_norm: True
+    concat_hidden: True
+    short_cut: True
+    readout: 'sum'
+    num_relation: 7
+    edge_input_dim: 59
+    num_angle_bin: 8
+    layer_norm: True
+    dropout: 0.2
+    use_ieconv: True
+  graph_construction_model:
+    class: GraphConstruction
+    node_layers:
+      - class: AlphaCarbonNode
+    edge_layers:
+      - class: SequentialEdge
+        max_distance: 2
+      - class: SpatialEdge
+        radius: 10.0
+        min_distance: 5
+      - class: KNNEdge
+        k: 10
+        min_distance: 5
+    edge_feature: gearnet
+
+optimizer:
+  class: Adam
+  lr: 1.0e-3
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 32
+  log_interval: 100
+
+save_interval: 5
+
+train:
+  num_epoch: 100

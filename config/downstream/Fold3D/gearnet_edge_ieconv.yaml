@@ -1,0 +1,70 @@
+output_dir: ~/scratch/protein_output
+
+dataset:
+  class: Fold3D
+  path: ~/scratch/protein-datasets/
+  test_split: test_fold
+  transform:
+    class: ProteinView
+    view: residue
+
+task:
+  class: PropertyPrediction
+  num_mlp_layer: 3
+  mlp_batch_norm: True
+  mlp_dropout: 0.5
+  model:
+    class: GearNetIEConv
+    input_dim: 21
+    embedding_dim: 512
+    hidden_dims: [512, 512, 512, 512, 512, 512]
+    batch_norm: True
+    concat_hidden: True
+    short_cut: True
+    readout: 'sum'
+    num_relation: 7
+    edge_input_dim: 59
+    num_angle_bin: 8
+    layer_norm: True
+    dropout: 0.2
+    use_ieconv: True
+  graph_construction_model:
+    class: GraphConstruction
+    node_layers:
+      - class: AlphaCarbonNode
+    edge_layers:
+      - class: SequentialEdge
+        max_distance: 2
+      - class: SpatialEdge
+        radius: 10.0
+        min_distance: 5
+      - class: KNNEdge
+        k: 10
+        min_distance: 5
+    edge_feature: gearnet
+  criterion: ce
+  metric: ['acc']
+  num_class: 1195
+
+optimizer:
+  class: SGD
+  lr: 1.0e-3
+  weight_decay: 5.0e-4
+  momentum: 0.98
+
+scheduler:
+  class: StepLR
+  step_size: 50
+  gamma: 0.5
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 2
+  log_interval: 1000
+
+model_checkpoint: {{ ckpt }}
+
+metric: accuracy [fold_label]
+
+train:
+  num_epoch: 300
