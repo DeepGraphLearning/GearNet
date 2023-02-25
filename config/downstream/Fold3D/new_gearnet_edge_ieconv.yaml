@@ -1,7 +1,7 @@
 output_dir: ~/scratch/protein_output
 
 dataset:
-  class: NewFold3D
+  class: Fold3D
   path: ~/scratch/protein-datasets/
   test_split: test_fold
   transform:
@@ -61,6 +61,8 @@ engine:
   gpus: {{ gpus }}
   batch_size: 2
   log_interval: 1000
+
+model_checkpoint: {{ ckpt }}
 
 metric: accuracy [fold_label]
 
