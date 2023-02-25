@@ -11,6 +11,8 @@ This is the official codebase of the paper
 
 ## News
 
+- [2023/02/25] The code for GearNet_Edge_IEConv & Fold3D dataset has been released.
+
 - [2023/02/01] Our paper has been accepted by ICLR'2023! We have released the pretrained model weights [here](https://zenodo.org/record/7593637).
 
 - [2022/11/20] We add the scheduler in the `downstream.py` and provide the config file for training GearNet-Edge with single GPU on EC. Now you can reproduce the results in the paper.
@@ -78,8 +80,11 @@ To run GearNet with multiple GPUs, use the following commands.
 ```bash
 # Run GearNet on the Enzyme Comission dataset with 4 gpus
 python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/EC/gearnet.yaml --gpus [0,1,2,3]
-```
 
+# Run GearNet_Edge_IEConv on the Fold3D dataset with 4 gpus
+# You need to first install the latest version of torchdrug from source. See https://github.com/DeepGraphLearning/torchdrug.
+python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/Fold3D/gearnet_edge_ieconv.yaml --gpus [0,1,2,3]
+```
 
 ### Pretraining and Finetuning
 By default, we will use the AlphaFold Datase for pretraining.
