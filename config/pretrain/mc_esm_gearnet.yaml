@@ -1,0 +1,70 @@
+output_dir: ~/scratch/protein_output
+
+dataset:
+  class: AlphaFoldDB
+  path: ~/scratch/protein-datasets/alphafold
+  species_start: 0
+  species_end: 22
+  # species_id: 3
+  # split_id: 1
+  atom_feature: null
+  bond_feature: null
+  transform:
+    class: ProteinView
+    view: residue
+
+task:
+  class: Unsupervised
+  model:
+    class: MultiviewContrast
+    crop_funcs:
+      - class: SubsequenceNode
+        max_length: 50
+    noise_funcs:
+      - class: IdentityNode
+      - class: RandomEdgeMask
+        mask_rate: 0.15
+    model:
+      class: FusionNetwork
+      sequence_model:
+        class: ESM
+        path: ~/scratch/protein-model-weights/esm-model-weights/
+        model: ESM-1b
+      structure_model:
+        class: GearNet
+        input_dim: 1280
+        hidden_dims: [512, 512, 512, 512, 512, 512]
+        batch_norm: True
+        concat_hidden: True
+        short_cut: True
+        readout: 'sum'
+        num_relation: 7
+  graph_construction_model:
+    class: GraphConstruction
+    node_layers:
+      - class: AlphaCarbonNode
+    edge_layers:
+      - class: SequentialEdge
+        max_distance: 2
+      - class: SpatialEdge
+        radius: 10.0
+        min_distance: 5
+      - class: KNNEdge
+        k: 10
+        min_distance: 5
+    edge_feature: gearnet
+
+optimizer:
+  class: Adam
+  lr: 2.0e-4
+
+engine:
+  gpus: {{ gpus }}
+  batch_size: 48
+  log_interval: 100
+
+save_interval: 5
+fix_sequence_model: True
+
+train:
+  num_epoch: 50

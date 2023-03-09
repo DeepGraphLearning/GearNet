@@ -135,3 +135,30 @@ class GearNetIEConv(nn.Module, core.Configurable):
             "graph_feature": graph_feature,
             "node_feature": node_feature
         }
+
+
+@R.register("models.FusionNetwork")
+class FusionNetwork(nn.Module, core.Configurable):
+
+    def __init__(self, sequence_model, structure_model):
+        super(FusionNetwork, self).__init__()
+        self.sequence_model = sequence_model
+        self.structure_model = structure_model
+        self.output_dim = sequence_model.output_dim + structure_model.output_dim
+
+    def forward(self, graph, input, all_loss=None, metric=None):
+        output1 = self.sequence_model(graph, input, all_loss, metric)
+        node_output1 = output1.get("node_feature", output1.get("residue_feature"))
+        output2 = self.structure_model(graph, node_output1, all_loss, metric)
+        node_output2 = output2.get("node_feature", output2.get("residue_feature"))
+        
+        node_feature = torch.cat([node_output1, node_output2], dim=-1)
+        graph_feature = torch.cat([
+            output1['graph_feature'], 
+            output2['graph_feature']
+        ], dim=-1)
+
+        return {
+            "graph_feature": graph_feature,
+            "node_feature": node_feature
+        }
