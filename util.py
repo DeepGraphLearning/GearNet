@@ -139,6 +139,13 @@ def build_downstream_solver(cfg, dataset):
         optimizer = core.Configurable.load_config_dict(cfg.optimizer)
         solver.optimizer = optimizer
 
+    if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, **cfg.scheduler)
+    elif scheduler is not None:
+        cfg.scheduler.optimizer = optimizer
+        scheduler = core.Configurable.load_config_dict(cfg.scheduler)
+        solver.scheduler = scheduler
+
     if cfg.get("checkpoint") is not None:
         solver.load(cfg.checkpoint)
 
