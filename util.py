@@ -129,6 +129,22 @@ def build_downstream_solver(cfg, dataset):
         ]
         optimizer = core.Configurable.load_config_dict(cfg.optimizer)
         solver.optimizer = optimizer
+    elif "sequence_model_lr_ratio" in cfg:
+        assert cfg.task.model["class"] == "FusionNetwork"
+        cfg.optimizer.params = [
+            {'params': solver.model.model.sequence_model.parameters(), 'lr': cfg.optimizer.lr * cfg.sequence_model_lr_ratio},
+            {'params': solver.model.model.structure_model.parameters(), 'lr': cfg.optimizer.lr},
+            {'params': solver.model.mlp.parameters(), 'lr': cfg.optimizer.lr}
+        ]
+        optimizer = core.Configurable.load_config_dict(cfg.optimizer)
+        solver.optimizer = optimizer
+
+    if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
+        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, **cfg.scheduler)
+    elif scheduler is not None:
+        cfg.scheduler.optimizer = optimizer
+        scheduler = core.Configurable.load_config_dict(cfg.scheduler)
+        solver.scheduler = scheduler
 
     if cfg.get("checkpoint") is not None:
         solver.load(cfg.checkpoint)
@@ -149,7 +165,15 @@ def build_pretrain_solver(cfg, dataset):
         logger.warning("#dataset: %d" % (len(dataset)))
 
     task = core.Configurable.load_config_dict(cfg.task)
-    cfg.optimizer.params = task.parameters()
+    if "fix_sequence_model" in cfg:
+        if cfg.task["class"] == "Unsupervised":
+            model_dict = cfg.task.model.model
+        else:
+            model_dict = cfg.task.model 
+        assert model_dict["class"] == "FusionNetwork"
+        for p in task.model.model.sequence_model.parameters():
+            p.requires_grad = False
+    cfg.optimizer.params = [p for p in task.parameters() if p.requires_grad]
     optimizer = core.Configurable.load_config_dict(cfg.optimizer)
     solver = core.Engine(task, dataset, None, None, optimizer, **cfg.engine)
     
