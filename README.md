@@ -9,7 +9,17 @@ This is the official codebase of the paper
 
 [Zuobai Zhang](https://oxer11.github.io/), [Minghao Xu](https://chrisallenming.github.io/), [Arian Jamasb](https://jamasb.io/), [Vijil Chenthamarakshan](https://researcher.watson.ibm.com/researcher/view.php?person=us-ecvijil), [Aurelie Lozano](https://researcher.watson.ibm.com/researcher/view.php?person=us-aclozano), [Payel Das](https://researcher.watson.ibm.com/researcher/view.php?person=us-daspa), [Jian Tang](https://jian-tang.com/)
 
+and the paper
+
+**Enhancing Protein Language Models with Structure-based Encoder and Pre-training**, *ICLR'2023 MLDD Workshop*
+
+[[ArXiv](https://arxiv.org/abs/2303.06275)] [[OpenReview]()]
+
+[Zuobai Zhang](https://oxer11.github.io/), [Minghao Xu](https://chrisallenming.github.io/), [Vijil Chenthamarakshan](https://researcher.watson.ibm.com/researcher/view.php?person=us-ecvijil), [Aurelie Lozano](https://researcher.watson.ibm.com/researcher/view.php?person=us-aclozano), [Payel Das](https://researcher.watson.ibm.com/researcher/view.php?person=us-daspa), [Jian Tang](https://jian-tang.com/)
+
 ## News
+
+- [2023/03/14] The code for ESM_GearNet has been released with [our latest paper](https://arxiv.org/abs/2303.06275).
 
 - [2023/02/25] The code for GearNet_Edge_IEConv & Fold3D dataset has been released.
 
@@ -81,6 +91,9 @@ To run GearNet with multiple GPUs, use the following commands.
 # Run GearNet on the Enzyme Comission dataset with 4 gpus
 python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/EC/gearnet.yaml --gpus [0,1,2,3]
 
+# Run ESM_GearNet on the Enzyme Comission dataset with 4 gpus
+python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/EC/ESM_gearnet.yaml --gpus [0,1,2,3]
+
 # Run GearNet_Edge_IEConv on the Fold3D dataset with 4 gpus
 # You need to first install the latest version of torchdrug from source. See https://github.com/DeepGraphLearning/torchdrug.
 python -m torch.distributed.launch --nproc_per_node=4 script/downstream.py -c config/downstream/Fold3D/gearnet_edge_ieconv.yaml --gpus [0,1,2,3]
@@ -94,6 +107,9 @@ Similar, all the datasets will be automatically downloaded in the code and prepr
 ```bash
 # Pretrain GearNet-Edge with Multiview Contrast
 python script/pretrain.py -c config/pretrain/mc_gearnet_edge.yaml --gpus [0]
+
+# Pretrain ESM_GearNet with Multiview Contrast
+python script/pretrain.py -c config/pretrain/mc_esm_gearnet.yaml --gpus [0]
 ```
 
 After pretraining, you can load the model weight from the saved checkpoint via the `--ckpt` argument and then finetune the model on downstream tasks.
@@ -166,16 +182,39 @@ More detailed results are listed in the paper.
         <td>0.626</td>
         <td>0.465</td>
     </tr>
+    <tr>
+        <th>ESM_GearNet</th>
+        <td>0.883</td>
+        <td>0.491</td>
+        <td>0.677</td>
+        <td>0.501</td>
+    </tr>
+    <tr>
+        <th>ESM_GearNet (Multiview Contrast)</th>
+        <td>0.894</td>
+        <td>0.516</td>
+        <td>0.684</td>
+        <td>0.5016</td>
+    </tr>
 </table>
 
 ## Citation
-If you find this codebase useful in your research, please cite the following paper.
+If you find this codebase useful in your research, please cite the following papers.
 
 ```bibtex
-@article{zhang2022protein,
+@inproceedings{zhang2022protein,
   title={Protein representation learning by geometric structure pretraining},
   author={Zhang, Zuobai and Xu, Minghao and Jamasb, Arian and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
-  journal={arXiv preprint arXiv:2203.06125},
-  year={2022}
+  booktitle={International Conference on Learning Representations},
+  year={2023}
+}
+```
+
+```bibtex
+@inproceedings{zhang2023protein,
+  title={Enhancing protein language models with structure-based encoder and pre-training},
+  author={Zhang, Zuobai and Xu, Minghao and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
+  booktitle={International Conference on Learning Representations Machine Learning for Drug Discovery Workshop},
+  year={2023}
 }
 ```
