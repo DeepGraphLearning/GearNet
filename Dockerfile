@@ -11,3 +11,4 @@ RUN pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-1.13.0+
 
 RUN pip install -r requirements.txt
 COPY . /GearNet
+WORKDIR /GearNet

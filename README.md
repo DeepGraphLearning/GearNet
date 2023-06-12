@@ -68,6 +68,21 @@ pip install torchdrug
 pip install easydict pyyaml
 ```
 
+### Using Docker
+
+First, make sure to setup docker with GPU support ([guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)).
+
+Next, build docker image
+
+```bash
+docker build . -t GearNet
+```
+
+Then, after image is built, you can run training commands from within docker with following command
+
+```bash
+docker run -it -v /path/to/dataset/directory/on/disk:/root/scratch/ --gpus all GearNet bash
+```
 
 ## Reproduction
 
