@@ -19,6 +19,8 @@ and the paper
 
 ## News
 
+- [2023/10/17] Please check the latest version of the [ESM-GearNet paper](https://arxiv.org/abs/2303.06275) and [code implementation](https://github.com/DeepGraphLearning/ESM-GearNet)!!
+
 - [2023/03/14] The code for ESM_GearNet has been released with [our latest paper](https://arxiv.org/abs/2303.06275).
 
 - [2023/02/25] The code for GearNet_Edge_IEConv & Fold3D dataset has been released.
