@@ -228,10 +228,10 @@ If you find this codebase useful in your research, please cite the following pap
 ```
 
 ```bibtex
-@inproceedings{zhang2023protein,
-  title={Enhancing protein language models with structure-based encoder and pre-training},
-  author={Zhang, Zuobai and Xu, Minghao and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
-  booktitle={International Conference on Learning Representations Machine Learning for Drug Discovery Workshop},
+@article{zhang2023enhancing,
+  title={A Systematic Study of Joint Representation Learning on Protein Sequences and Structures},
+  author={Zhang, Zuobai and Wang, Chuanrui and Xu, Minghao and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
+  journal={arXiv preprint arXiv:2303.06275},
   year={2023}
 }
 ```
