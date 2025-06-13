@@ -101,6 +101,7 @@ python script/downstream.py -c config/downstream/EC/gearnet.yaml --gpus [0]
 
 We provide the hyperparameters for each experiment in configuration files.
 All the configuration files can be found in `config/*.yaml`.
+**Please note that the batch size in yaml file are for each gpu.**
 
 To run GearNet with multiple GPUs, use the following commands.
 
